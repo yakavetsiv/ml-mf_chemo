@@ -1,0 +1,11 @@
+{
+    "parameters": [{"name": "conc0", "type": "continuous", "low": 0.0, "high": 1.0, "size": 1},
+                   {"name": "conc1", "type": "continuous", "low": 0.0, "high": 1.0, "size": 1},
+                   {"name": "conc2", "type": "continuous", "low": 0.0, "high": 1.0, "size" : 1}
+                 ],
+    "objectives": [{"name": "ci", "goal": "min", "tolerance":-0.1, "absolute": true},
+	       	       {"name": "cv_exp", "goal": "min", "tolerance": 0.7, "absolute": true}
+    		],
+    "general": {"batches": 1,
+                "sampling_strategies": 7}
+}
