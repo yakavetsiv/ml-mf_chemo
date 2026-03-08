@@ -6,9 +6,56 @@ import shutil
 import numpy as np
 import pandas as pd
 from gryffin import Gryffin
+from gryffin.utilities import config_parser as gryffin_config_parser
+from gryffin.random_sampler import random_sampler as gryffin_random_sampler
 from rich.console import Console
 from rich.table import Table
 from known_constraints import known_constraints_chrono
+
+# NumPy removed this alias in >=1.24, but Gryffin still references it.
+if not hasattr(np, "float"):
+    np.float = float
+
+
+#=========================GRYFFIN COMPATIBILITY PATCHES=========================
+
+def _apply_gryffin_compatibility_patches():
+    """
+    Patch two Gryffin edge cases observed with modern NumPy/Python:
+    1) ragged descriptor arrays should be object arrays;
+    2) rare off-by-one categorical/discrete option indexing.
+    """
+
+    def _feature_descriptors(self):
+        descriptors = []
+        for spec in self.features.specifics:
+            if 'descriptors' in spec:
+                descriptors.append(spec['descriptors'])
+            else:
+                descriptors.append(None)
+        return np.array(descriptors, dtype=object)
+
+    def _safe_param_vector_to_dict(param_vector, param_names, param_options, param_types):
+        param_dict = {}
+        for param_index, param_name in enumerate(param_names):
+            param_type = param_types[param_index]
+
+            if param_type == 'continuous':
+                param_dict[param_name] = param_vector[param_index]
+
+            elif param_type in ['categorical', 'discrete']:
+                options = param_options[param_index]
+                selected_option_idx = int(param_vector[param_index])
+                if selected_option_idx < 0:
+                    selected_option_idx = 0
+                elif selected_option_idx >= len(options):
+                    selected_option_idx = len(options) - 1
+                param_dict[param_name] = options[selected_option_idx]
+
+        return param_dict
+
+    gryffin_config_parser.ConfigParser.feature_descriptors = property(_feature_descriptors)
+    gryffin_random_sampler.param_vector_to_dict = _safe_param_vector_to_dict
 
 
 #==============================UTILS============================================
@@ -67,7 +114,9 @@ CONFIG = {
      "general": {
              "auto_desc_gen": False,
              "batches": 1,
-             "num_cpus": 4,
+            # Use a single process to avoid multiprocessing spawn issues on macOS
+            # and keep behavior consistent across environments.
+            "num_cpus": 1,
              "boosted":  False,
              "caching": True,
              "backend": "tensorflow",
@@ -110,6 +159,7 @@ print()
 print_df_as_rich_table(df_in, title='Past Experiments')
 
 # init gryffin
+_apply_gryffin_compatibility_patches()
 gryffin = Gryffin(config_dict=CONFIG, known_constraints=known_constraints_chrono)
 
 
@@ -157,7 +207,7 @@ df_samples['t1'] = 48-df_samples['t0']
 print(df_samples)
 
 # append df_samples to df_in
-df_out = df_in.append(df_samples, ignore_index=True, sort=False)
+df_out = pd.concat([df_in, df_samples], ignore_index=True, sort=False)
 
 
 # make backup of result file

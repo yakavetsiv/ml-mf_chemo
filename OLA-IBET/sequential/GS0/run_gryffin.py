@@ -154,7 +154,7 @@ df_samples['t1'] = 12-df_samples['t0']
 print(df_samples)
 
 # append df_samples to df_in
-df_out = df_in.append(df_samples, ignore_index=True, sort=False)
+df_out = pd.concat([df_in, df_samples], ignore_index=True, sort=False)
 
 
 # make backup of result file

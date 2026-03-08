@@ -160,7 +160,7 @@ df_samples['number'] = df_samples.index +1
 print(df_samples)
 
 # append df_samples to df_in
-df_out = df_in.append(df_samples, ignore_index=True, sort=False)
+df_out = pd.concat([df_in, df_samples], ignore_index=True, sort=False)
 df_inv = norm_data_inverse(df_out, fit_params['bounds'])
 df_out['conc0_inv'] = df_inv['conc0']
 df_out['conc1_inv'] = df_inv['conc1']

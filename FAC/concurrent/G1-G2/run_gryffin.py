@@ -101,7 +101,7 @@ print_df_as_rich_table(df_samples, title='Proposed Experiments')
 print()
 
 # append df_samples to df_in
-df_out = df_in.append(df_samples, ignore_index=True, sort=False)
+df_out = pd.concat([df_in, df_samples], ignore_index=True, sort=False)
 
 # make backup of result file
 bkp_file = f"backup_{OBS_FILE}"

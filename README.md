@@ -89,6 +89,7 @@ export PATH="/home/ekg/anaconda3/bin:$PATH"
 conda create -n gryffin python=3.7
 source activate gryffin
 ```
+For modern environments, Python 3.10-3.11 is also supported through version markers in `requirements.txt`.
 
 ### 4. Install Dependencies
 There are two ways to install the required packages:
@@ -105,10 +106,17 @@ This will install all necessary packages with specific versions:
 - Build requirements
 
 #### Option 2: Manual Installation
+Legacy stack (Python 3.7/3.8):
 ```bash
 conda install numpy scipy sqlalchemy cython pandas
 pip install tensorflow==2.3
 pip install tensorflow-probability==0.11
+```
+Modern stack (Python 3.10/3.11):
+```bash
+conda install numpy scipy sqlalchemy cython pandas
+pip install "tensorflow>=2.15,<2.16"
+pip install "tensorflow-probability>=0.23,<0.24"
 ```
 
 ### 5. Install Gryffin
@@ -145,10 +153,14 @@ The project requires several Python packages that are specified in `requirements
 
 ```text
 # Core dependencies
-numpy>=1.19.2        # For numerical computations
-pandas>=1.1.3        # For data manipulation
-tensorflow==2.3.0    # ML backend
-tensorflow-probability==0.11.0
+numpy>=1.18.5,<1.19; python_version < "3.9"
+numpy>=1.23,<2.0; python_version >= "3.9"
+pandas>=1.1.3,<1.3; python_version < "3.9"
+pandas>=1.5; python_version >= "3.9"
+tensorflow==2.3.0; python_version < "3.9"          # Legacy ML backend
+tensorflow-probability==0.11.0; python_version < "3.9"
+tensorflow>=2.15,<2.16; python_version >= "3.9"    # Modern ML backend
+tensorflow-probability>=0.23,<0.24; python_version >= "3.9"
 
 # Gryffin specific
 gryffin @ git+https://github.com/aspuru-guzik-group/gryffin.git@master
